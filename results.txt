@@ -1,0 +1,67 @@
+RUN: 20220130_172541
+
+Epoch: 250
+Batch size: 1024
+ batch 9 loss: 0.45239725708961487
+ batch 19 loss: 0.45654842257499695
+ batch 29 loss: 0.4459145665168762
+ batch 39 loss: 0.45781880617141724
+ batch 49 loss: 0.45712190866470337
+Loss train: 0.45712190866470337, validation: 0.4516797661781311
+Precision: 0.6373626589775085
+Recall: 0.263337105512619
+F1: 0.37269076704978943
+
+    variables = [
+        FuzzyVariable("Rainfall", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("MaxTemp", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Humidity3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("RainToday", BooleanMembershipFunction.get_all()),
+    ]
+
+-----------------------------------------------------------------------------------------------------------------------
+RUN: 20220130_183534
+Epochs: 20
+Batch size: 128
+LR: 0.01
+
+Loss train: 0.4478925228118896, validation: 0.4406830525169006
+Precision: 0.6435079574584961
+Recall: 0.2565266788005829
+F1: 0.36682355403900146
+
+    variables = [
+        FuzzyVariable("Rainfall", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("MaxTemp", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Humidity3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("WindGustSpeed", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("MinTemp", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("RainToday", BooleanMembershipFunction.get_all()),
+    ]
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Run: 20220205_155404
+
+Epochs: 70
+LR: 0.01
+Batch size: 512
+
+Loss train: 0.43144202828407285, validation: 0.4378981154698592
+Precision: 0.6418994665145874
+Recall: 0.26083996891975403
+F1: 0.3709443509578705
+
+    variables = [
+        FuzzyVariable("MinTemp", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("MaxTemp", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Rainfall", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("WindGustSpeed", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Humidity3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
+        FuzzyVariable("RainToday", [SingletonMembershipFunction(0), SingletonMembershipFunction(1)]),
+    ]

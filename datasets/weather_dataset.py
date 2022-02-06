@@ -14,18 +14,8 @@ class WeatherDataset(torch.utils.data.Dataset):
         self.__transform = transform
         self.__target_transform = target_transform
 
-        # self.feature_names = ["MinTemp", "MaxTemp", "Rainfall", "WindGustDir", "WindGustSpeed", "WindDir9am",
-        #                       "WindDir3pm", "WindSpeed9am", "WindSpeed3pm", "Humidity9am", "Humidity3pm",
-        #                       "Pressure9am", "Pressure3pm", "Temp9am", "Temp3pm", "RainToday", "latitude",
-        #                       "longitude"]
-
-        # self.feature_names = ["MinTemp", "MaxTemp", "Rainfall", "WindGustSpeed",
-        #                       "WindSpeed9am", "WindSpeed3pm", "Humidity9am", "Humidity3pm",
-        #                       "Pressure9am", "Pressure3pm", "RainToday"]
-
-        self.feature_names = ["Rainfall", "Pressure3pm", "MaxTemp", "Humidity3pm",  "RainToday"]
-
-        # self.feature_names = ["MinTemp", "MaxTemp"]
+        self.feature_names = ["MinTemp", "MaxTemp", "Rainfall", "WindGustSpeed", "Humidity3pm", "Pressure3pm",
+                              "RainToday"]
 
         self.means = {}
         self.stds = {}

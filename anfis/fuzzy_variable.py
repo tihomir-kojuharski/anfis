@@ -39,7 +39,11 @@ class FuzzyVariable(torch.nn.Module):
     def forward(self, x):
         result = torch.cat([mf(x) for mf in self.__mfs.values()], dim=1)
         if self.__padding > 0:
-            result = torch.cat([result, torch.zeros(x.shape[0], self.__padding)], dim=1)
+            zeros = torch.zeros(x.shape[0], self.__padding)
+            device = result.get_device()
+            if device != -1:
+                zeros = zeros.to(device)
+            result = torch.cat([result, zeros], dim=1)
 
         return result
 

@@ -18,7 +18,11 @@ class PremiseLayer(torch.nn.Module):
         return self.__mf_indices.shape[0]
 
     def forward(self, x):
+
         batch_indices = self.__mf_indices.expand((x.shape[0], -1, -1))
+        device = x.get_device()
+        if device != -1:
+            batch_indices = batch_indices.to(device)
         ants = torch.gather(x.transpose(1, 2), 1, batch_indices)
         rules = torch.prod(ants, dim=2)
 

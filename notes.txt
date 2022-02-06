@@ -1,0 +1,2 @@
+Cuda out of memory. Solution: https://discuss.pytorch.org/t/cuda-out-of-memory-on-the-8th-epoch/67288
+When we accumulate the loss, we should do it like that loss += batch_loss.item(), because otherwise, we keep track of the whole graph from all runs

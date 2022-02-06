@@ -1,57 +1,37 @@
+import os
 from datetime import datetime
-from enum import Enum
 from math import inf
 
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from anfis.anfis_net import AnfisNet
-from anfis.fuzzy_variable import FuzzyVariable
-from anfis.membership_functions.boolean_membership_function import BooleanMembershipFunction
-from anfis.membership_functions.gaussian_membership_function import GaussianMembershipFunction
-from anfis.membership_functions.trapezoidal_membership_function import TrapezoidalMembershipFunction
 from datasets.weather_dataset import WeatherDataset
+from utils import get_weather_anfis_model, DS
 
 
-class DS(str, Enum):
-    TRAIN = "train"
-    VALIDATION = "validation"
-    TEST = "test"
-
-
-def main():
+def train():
     datasets = {}
     data_loaders = {}
 
     for ds_name in [DS.TRAIN, DS.VALIDATION]:
         datasets[ds_name] = WeatherDataset(f"data/weatherAUS_{ds_name}.csv")
-        data_loaders[ds_name] = DataLoader(datasets[ds_name], batch_size=64, shuffle=True)
+        data_loaders[ds_name] = DataLoader(datasets[ds_name], batch_size=512, shuffle=True)
 
-    # variables = [
-    #     FuzzyVariable(feature, GaussianMembershipFunction.get_functions(0.2, [0.2, 0.5, 0.7]))
-    #     for feature in datasets["train"].feature_names
-    #     if feature != "RainToday"
-    # ]
-    #
-    # variables.extend([FuzzyVariable("RainToday", BooleanMembershipFunction.get_all())])
-    variables = [
-        FuzzyVariable("Rainfall", TrapezoidalMembershipFunction.get_range_functions()),
-        FuzzyVariable("Pressure3pm", TrapezoidalMembershipFunction.get_range_functions()),
-        FuzzyVariable("MaxTemp", TrapezoidalMembershipFunction.get_range_functions()),
-        FuzzyVariable("Humidity3pm", TrapezoidalMembershipFunction.get_range_functions()),
-        FuzzyVariable("RainToday", BooleanMembershipFunction.get_all()),
-    ]
+    model = get_weather_anfis_model()
 
-    model = AnfisNet(variables, 1, head_activation=torch.nn.Sigmoid())
+    device = torch.device("cuda")
+    model.to(device)
 
-    epochs = 10
+    epochs = 10000
 
     loss_fn = torch.nn.BCELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
+
+    os.makedirs(os.path.join("output", str(timestamp)), exist_ok=True)
+    writer = SummaryWriter('output/{}/anfis_trainer'.format(timestamp))
 
     best_vloss = inf
 
@@ -59,7 +39,7 @@ def main():
         print(f"Epoch: {epoch + 1}")
 
         model.train(True)
-        avg_loss = train_one_epoch(model, data_loaders["train"], optimizer, loss_fn, epoch, writer)
+        avg_loss = train_one_epoch(model, data_loaders["train"], optimizer, loss_fn, epoch, writer, device)
         model.train(False)
 
         running_vloss = 0.
@@ -68,10 +48,12 @@ def main():
         predicted_true = 0
         correct_true = 0
         for i, (features, labels) in enumerate(data_loaders["validation"]):
+            features = features.to(device)
+            labels = labels.to(device)
             outputs = model(features)
 
             vloss = loss_fn(outputs, labels)
-            running_vloss += vloss
+            running_vloss += vloss.item()
 
             predicted_classes = (outputs > 0.5).float()
             target_true += (labels == 1).sum()
@@ -99,15 +81,17 @@ def main():
         writer.flush()
 
         if avg_vloss < best_vloss:
-            model_path = 'output/model_{}_{}'.format(timestamp, epoch)
+            model_path = 'output/{}/model_{}.pth'.format(timestamp, epoch)
             torch.save(model.state_dict(), model_path)
 
 
-def train_one_epoch(model, data_loader, optimizer, loss_fn, epoch_index, tb_writer):
+def train_one_epoch(model, data_loader, optimizer, loss_fn, epoch_index, tb_writer, device):
     running_loss = 0.
     last_loss = 0.
 
     for i, (features, labels) in enumerate(data_loader):
+        features = features.to(device)
+        labels = labels.to(device)
         optimizer.zero_grad()
 
         result = model(features)
@@ -116,10 +100,10 @@ def train_one_epoch(model, data_loader, optimizer, loss_fn, epoch_index, tb_writ
         batch_loss.backward()
         optimizer.step()
 
-        running_loss += batch_loss
+        running_loss += batch_loss.item()
 
-        if i % 100 == 99:
-            last_loss = running_loss / 100
+        if i % 10 == 9:
+            last_loss = running_loss / 10
             print(f" batch {i} loss: {last_loss}")
             tb_x = epoch_index * len(data_loader) + i + 1
             tb_writer.add_scalar('Loss/train', last_loss, tb_x)
@@ -130,6 +114,6 @@ def train_one_epoch(model, data_loader, optimizer, loss_fn, epoch_index, tb_writ
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    main()
+    train()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

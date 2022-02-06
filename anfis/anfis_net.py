@@ -45,3 +45,9 @@ class AnfisNet(torch.nn.Module):
             rstr.append('Rule {:2d}: IF {}'.format(i, rule_ants[i]))
             rstr.append(' '*9+'THEN {}'.format(crow.tolist()))
         return '\n'.join(rstr)
+
+    # def to(self, device):
+    #     super().to(device)
+    #
+    #     for layer in self.layers.values():
+    #         layer.to(device)

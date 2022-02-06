@@ -13,5 +13,9 @@ class ConsequentLayer(torch.nn.Module):
         self.register_parameter('coeffs', torch.nn.Parameter(coeffs))
 
     def forward(self, x):
-        x_with_ones = torch.cat([x, torch.ones(x.shape[0], 1)], dim=1)
+        ones = torch.ones(x.shape[0], 1)
+        device = x.get_device()
+        if device != -1:
+            ones = ones.to(device)
+        x_with_ones = torch.cat([x, ones], dim=1)
         return torch.matmul(self.coeffs, x_with_ones.t()).transpose(0, 2)
