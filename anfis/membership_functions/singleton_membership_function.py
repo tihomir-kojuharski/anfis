@@ -9,3 +9,6 @@ class SingletonMembershipFunction(torch.nn.Module):
 
     def forward(self, x):
         return (x == self.__value).float()
+
+    def extra_repr(self) -> str:
+        return str(self.__value)
